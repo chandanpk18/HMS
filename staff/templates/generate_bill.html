@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bill</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .patient-details, .bill-details {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .patient-details td, .bill-details td {
+            padding: 5px;
+            border: 1px solid #ddd;
+        }
+        .total-amount, .remaining-amount {
+            text-align: right;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Final Bill</h1>
+    </div>
+    <table class="patient-details">
+        <tr>
+            <td><strong>Patient ID:</strong></td>
+            <td>{{ patient.pid }}</td>
+        </tr>
+        <tr>
+            <td><strong>Name:</strong></td>
+            <td>{{ patient.name }}</td>
+        </tr>
+        <tr>
+            <td><strong>Phone:</strong></td>
+            <td>{{ patient.phone }}</td>
+        </tr>
+        <tr>
+            <td><strong>Address:</strong></td>
+            <td>{{ patient.address }}</td>
+        </tr>
+        <tr>
+            <td><strong>Department:</strong></td>
+            <td>{{ patient.department }}</td>
+        </tr>
+        <tr>
+            <td><strong>Gender:</strong></td>
+            <td>{{ patient.gender }}</td>
+        </tr>
+        <tr>
+            <td><strong>Admission Date:</strong></td>
+            <td>{{ patient.admission_date }}</td>
+        </tr>
+    </table>
+
+    <table class="bill-details">
+        <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Status</th>
+        </tr>
+        {% for bill in bills %}
+        <tr>
+            <td>{{ bill.description }}</td>
+            <td>{{ bill.amount }}</td>
+            <td>{{ bill.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p class="total-amount">Total Amount: {{ total_amount }}</p>
+    <p class="remaining-amount">Remaining Amount: {{ remaining_amount }}</p>
+</body>
+</html>

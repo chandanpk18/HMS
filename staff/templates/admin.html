@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-image: url('{% static ' img/adwall.jpg' %}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+
+        }
+
+        li {
+            margin-right: 5px;
+        }
+
+        .card {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="my-4 text-center">Admin Dashboard</h1>
+        <nav class="navbar navbar-expand-lg navbar-light ">
+            <div class="container-fluid">
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="{% url 'dsignup' %}" class="btn btn-warning btn-lg mr-2 btn-block">Doctor</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'rsignup' %}" class="btn btn-warning btn-lg btn-block">Register</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a href="admin" class="btn btn-danger btn-lg btn-block">Administration</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'signout' %}" class="btn btn-danger btn-lg btn-block">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Top Metrics -->
+        <div class="row" style="text-align:center;">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        Number of Departments
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ num_departments }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        Active Patients
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ active_patients }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        Total Admissions Today
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_admissions_today }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart and Bar Chart -->
+        <div class="row" style="text-align:center;">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        Active Patients by Department
+                    </div>
+                    <div class="card-body">
+                        <canvas id="active-patients-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        Department Admissions
+                    </div>
+                    <div class="card-body">
+                        <canvas id="admissions-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4" style="text-align:center;">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        Bed Remaining per Department
+                    </div>
+                    <canvas id="bedRemainingChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Chart.js Script -->
+    <script>
+        // Colors array
+        const colors = [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)',
+            'rgba(255, 159, 64, 0.2)',
+            'rgba(199, 199, 199, 0.2)'
+        ];
+
+        // Border colors array
+        const borderColors = colors.map(color => color.replace('0.2', '1'));
+
+        // Active Patients by Department (Pie Chart)
+        const activePatientsCtx = document.getElementById('active-patients-chart').getContext('2d');
+        const activePatientsChart = new Chart(activePatientsCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ department_names| safe }},
+        datasets: [{
+            label: 'Active Patients',
+            data: {{ active_patients_data| safe }},
+            backgroundColor: colors,
+            borderColor: borderColors,
+            borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+                plugins: {
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                        text: 'Active Patients by Department'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.raw !== null) {
+                                label += context.raw;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+        // Department Admissions (Bar Chart)
+        const admissionsCtx = document.getElementById('admissions-chart').getContext('2d');
+        const admissionsChart = new Chart(admissionsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ department_names| safe }},
+        datasets: [{
+            label: 'Number of Admissions',
+            data: {{ admissions_data| safe }},
+            backgroundColor: colors,
+            borderColor: borderColors,
+            borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+                plugins: {
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                        text: 'Department Admissions'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.raw !== null) {
+                                label += context.raw;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+        // Bed Remaining per Department (Bar Chart)
+        const bedRemainingCtx = document.getElementById('bedRemainingChart').getContext('2d');
+        const bedRemainingChart = new Chart(bedRemainingCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ department_names| safe }},
+        datasets: [{
+            label: 'Beds Remaining',
+            data: {{ bed_remaining_data| safe }},
+            backgroundColor: colors,
+            borderColor: borderColors,
+            borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+                plugins: {
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                        text: 'Bed Remaining per Department'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.raw !== null) {
+                                label += context.raw;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    </script>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+</body>
+
+</html>

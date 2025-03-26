@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+{% load static %}
+<head>
+    <title>Generate Bill</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+           body {
+      background-image: url('{% static 'img/dwall.jpg' %}');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color:white;
+    }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Generate Bill</h1>
+    <form method="post" action="{% url 'generate_bill' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="patient_id">Patient ID</label>
+            <select class="form-control" id="patient_id" name="patient_id" required>
+                {% for patient in patients %}
+                    <option value="{{ patient.pid }}">{{ patient.name }}-{{ patient.pid }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" class="form-control" id="amount" name="amount" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="description" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate Bill</button>
+    </form>
+</div>
+</body>
+</html>
